@@ -5,4 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="ApplicationName" xml:space="preserve"><value>Happy Inventory</value></data>
+  <data name="ApiDocumentationTitle" xml:space="preserve"><value>Happy Inventory API documentation</value></data>
+  <data name="ApiDocumentationDescription" xml:space="preserve"><value>Phase 1 foundation. Business endpoints and sign-in will be added in later phases. This is not the frozen API contract.</value></data>
 </root>
