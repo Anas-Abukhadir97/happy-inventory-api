@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "api": {
+    "repository": "Anas-Abukhadir97/happy-inventory-api",
+    "sourceCommit": "387abcb2d253eb0f56e3c109629b809a9e796afc",
+    "image": "ghcr.io/anas-abukhadir97/happy-inventory-api@sha256:d7a89b9c23dff92981b49de756053e0ce8d3cced5597f669437f17666e0a1cc3"
+  },
+  "web": {
+    "repository": "Anas-Abukhadir97/happy-inventory-web",
+    "sourceCommit": "51c5ed880232bdc7f483af30315b0ad8307b1d23",
+    "image": "ghcr.io/anas-abukhadir97/happy-inventory-web@sha256:11e75e0d52eb99664b80ac0a9289e2b0eca45d8dee7a268cfe9b73e4c3d95a54"
+  },
+  "verification": "API CI release-pair job: clean start, non-root UIDs, HTTPS/authenticated health, restart persistence, SQLite backup/restore"
+}

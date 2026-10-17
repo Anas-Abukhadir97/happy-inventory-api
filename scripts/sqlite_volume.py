@@ -2,6 +2,7 @@
 
 import argparse
 import datetime as dt
+import os
 import pathlib
 import subprocess
 import uuid
@@ -10,7 +11,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def compose(*args: str) -> None:
-    subprocess.run(["docker", "compose", "-f", "compose.yaml", *args], cwd=ROOT, check=True)
+    subprocess.run(["docker", "compose", "-f", os.environ.get("INVENTORY_COMPOSE_FILE", "compose.yaml"),
+                    *args], cwd=ROOT, check=True)
 
 
 def backup(destination: pathlib.Path) -> None:
