@@ -24,3 +24,5 @@ happy-inventory-strategy.md
 **/obj/
 **/TestResults/
 artifacts/
+backups/
+__pycache__/

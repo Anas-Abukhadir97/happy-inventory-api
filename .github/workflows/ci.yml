@@ -36,3 +36,49 @@ jobs:
           path: artifacts/tests
           if-no-files-found: warn
           retention-days: 14
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          path: backend
+          persist-credentials: false
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: Anas-Abukhadir97/happy-inventory-web
+          path: frontend
+          persist-credentials: false
+      - run: python3 scripts/verify_compose.py --ephemeral-ci
+        working-directory: backend
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: phase6-compose-evidence
+          path: backend/artifacts/phase6
+          if-no-files-found: warn
+          retention-days: 14
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, containers]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Publish API image by source commit
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker buildx build --push --tag "ghcr.io/anas-abukhadir97/happy-inventory-api:$GITHUB_SHA" --metadata-file image-metadata.json .
+          python3 -c 'import json; print("ghcr.io/anas-abukhadir97/happy-inventory-api@" + json.load(open("image-metadata.json"))["containerimage.digest"])' > image-digest.txt
+          cat image-digest.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: api-image-digest
+          path: image-digest.txt
+          retention-days: 90

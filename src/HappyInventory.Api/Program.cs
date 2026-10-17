@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using HappyInventory.Application.Auth;
+using HappyInventory.Application.Health;
 using HappyInventory.Application.Inventory;
 using HappyInventory.Application.Integrations;
 using HappyInventory.Application.Logs;
 using HappyInventory.Application.Users;
 using HappyInventory.Api;
 using HappyInventory.Infrastructure.Auth;
+using HappyInventory.Infrastructure.Health;
 using HappyInventory.Infrastructure.Data;
 using HappyInventory.Infrastructure.Inventory;
 using HappyInventory.Infrastructure.Integrations;
@@ -69,6 +73,7 @@ builder.Services.AddSingleton<ISupplierNotificationAdapter, LocalSupplierNotific
 if (builder.Configuration.GetValue("SupplierOutbox:WorkerEnabled", true))
     builder.Services.AddHostedService<SupplierOutboxWorker>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddSingleton<IEventLogReader>(new EventLogReader(logDirectory));
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddProblemDetails();
@@ -169,6 +174,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+var knownProxy = builder.Configuration["ReverseProxy:KnownProxy"];
+if (!string.IsNullOrWhiteSpace(knownProxy))
+{
+    if (!IPAddress.TryParse(knownProxy, out var proxyAddress))
+        throw new InvalidOperationException("ReverseProxy:KnownProxy must be an IP address.");
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
+        options.KnownProxies.Add(proxyAddress);
+    });
+}
 
 var app = builder.Build();
 _ = app.Services.GetRequiredService<AuthSettings>();
@@ -180,6 +197,7 @@ using (var scope = app.Services.CreateScope())
         app.Environment.IsDevelopment());
 }
 app.UseExceptionHandler();
+if (!string.IsNullOrWhiteSpace(knownProxy)) app.UseForwardedHeaders();
 app.UseRequestLocalization(options => options
     .SetDefaultCulture("en")
     .AddSupportedCultures("en", "ar")
@@ -188,7 +206,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.Use(async (context, next) =>
     {
-        if (!context.Request.IsHttps)
+        if (!context.Request.IsHttps &&
+            !(IsLocalProbe(context) && context.Request.Path.StartsWithSegments("/health")))
         {
             await WriteAuthProblemAsync(context, 400, "https_required", "HttpsRequired");
             return;
@@ -217,8 +236,18 @@ app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = (diagn
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/health/live", (HttpContext context) =>
+    IsLocalProbe(context) ? Results.NoContent() : Results.NotFound()).AllowAnonymous();
+app.MapGet("/health/ready", async (HttpContext context, IHealthService health, CancellationToken ct) =>
+{
+    if (!IsLocalProbe(context)) return Results.NotFound();
+    return await health.IsReadyAsync(ct) ? Results.NoContent() : Results.StatusCode(503);
+}).AllowAnonymous();
 app.MapControllers();
 app.Run();
+
+static bool IsLocalProbe(HttpContext context) =>
+    IPAddress.IsLoopback(context.Connection.RemoteIpAddress ?? IPAddress.None);
 
 static Task WriteAuthProblemAsync(HttpContext context, int status, string code, string resourceKey)
 {

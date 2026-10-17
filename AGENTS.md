@@ -1,6 +1,6 @@
 # Project instructions
 
-Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and versioned contract. Work within the phase authorized by the user; Phase 5 integrated hardening is complete and Phase 6 containers are next.
+Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and versioned contract. Work within the phase authorized by the user; Phase 6 containers and publication are in progress, with Azure still gated for Phase 8.
 
 Use the existing localization system for all new or changed user-facing text, including labels, validation, notifications and accessibility text. Reuse resource keys or add them to existing en/ar resources. Preserve authorization role identifiers Admin/Management/Auditor and backend-owned messages.
 
