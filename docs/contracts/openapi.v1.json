@@ -1037,7 +1037,7 @@
   },
   "info": {
     "title": "Happy Inventory API",
-    "version": "0.2.0-draft"
+    "version": "0.2.1-draft"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1611,9 +1611,11 @@
     },
     "/api/v1/integrations/inventory-deductions": {
       "post": {
+        "description": "Atomically deduct one item while retaining at least one in stock. A caller/key replay with the same payload returns the stored result and replayed=true; a changed payload returns 409 idempotency_conflict. Successful keys are retained with inventory history without expiry.",
         "operationId": "deductInventory",
         "parameters": [
           {
+            "description": "Printable ASCII (1-128 characters); unique per authenticated caller. Reuse for uncertain retries.",
             "in": "header",
             "name": "Idempotency-Key",
             "required": true,
@@ -1626,6 +1628,12 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "example": {
+                "externalReference": "order-42-line-1",
+                "itemId": 2,
+                "quantity": 2,
+                "warehouseId": 1
+              },
               "schema": {
                 "$ref": "#/components/schemas/DeductionRequest"
               }
@@ -1637,6 +1645,28 @@
           "200": {
             "content": {
               "application/json": {
+                "examples": {
+                  "first": {
+                    "summary": "Successful deduction",
+                    "value": {
+                      "deductionId": "d405fa40-d394-4ce0-83a4-8d20a2c16493",
+                      "itemId": 2,
+                      "replayed": false,
+                      "resultQuantity": 3,
+                      "warehouseId": 1
+                    }
+                  },
+                  "replay": {
+                    "summary": "Same caller, key and payload",
+                    "value": {
+                      "deductionId": "d405fa40-d394-4ce0-83a4-8d20a2c16493",
+                      "itemId": 2,
+                      "replayed": true,
+                      "resultQuantity": 3,
+                      "warehouseId": 1
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/DeductionResult"
                 }
@@ -1687,12 +1717,34 @@
           "409": {
             "content": {
               "application/problem+json": {
+                "examples": {
+                  "changedKey": {
+                    "summary": "Key reused with changed payload",
+                    "value": {
+                      "code": "idempotency_conflict",
+                      "status": 409,
+                      "title": "This idempotency key was already used for a different request.",
+                      "traceId": "example-trace-id",
+                      "type": "about:blank"
+                    }
+                  },
+                  "insufficient": {
+                    "summary": "Deduction would leave zero stock",
+                    "value": {
+                      "code": "insufficient_stock",
+                      "status": 409,
+                      "title": "This deduction would leave fewer than one item in stock.",
+                      "traceId": "example-trace-id",
+                      "type": "about:blank"
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
               }
             },
-            "description": "Conflict"
+            "description": "idempotency_conflict or insufficient_stock"
           }
         },
         "security": [
@@ -2026,10 +2078,17 @@
         ]
       },
       "post": {
+        "description": "Manually prepare a supplier request and its outbox message in one transaction. Pending/Sent/Failed refer to the local test adapter only; no supplier is contacted.",
         "operationId": "createSupplierOrder",
         "requestBody": {
           "content": {
             "application/json": {
+              "example": {
+                "itemId": 2,
+                "requestedQuantity": 10,
+                "supplierDestination": "supplier@example.test",
+                "warehouseId": 1
+              },
               "schema": {
                 "$ref": "#/components/schemas/SupplierOrderCreate"
               }
@@ -2041,6 +2100,15 @@
           "201": {
             "content": {
               "application/json": {
+                "example": {
+                  "createdAtUtc": "2026-10-17T12:00:00Z",
+                  "id": "5b77fe83-5295-4794-a07a-a0e30a9a7629",
+                  "itemId": 2,
+                  "requestedQuantity": 10,
+                  "status": "Pending",
+                  "supplierDestination": "supplier@example.test",
+                  "warehouseId": 1
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SupplierOrder"
                 }
