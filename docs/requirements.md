@@ -9,7 +9,7 @@
 | Idempotent deductions retaining quantity >=1, full print report, local supplier outbox | 4A | Implemented; see phase-4a.md |
 | Browser/SQLite/auth/concurrency/integration acceptance | 5 | Implemented; see phase-5.md |
 | Containers, Compose, persistence/restore and separate GHCR images | 6 | Implemented and verified; see phase-6.md and tested manifest |
-| Documentation, tested release pair, source archives | 7 | Reviewer guide and archive tooling prepared; final clean-checkout acceptance recorded in phase-7.md |
+| Documentation, tested release pair, source archives | 7 | Delivered; fresh-checkout checks and bundles recorded in phase-7.md |
 | Azure, HTTPS, hosted restore/rollback | 8 | Cost approval required |
 
 Roles remain Admin/Management/Auditor. Inventory names are globally unique; SKU optional/nonunique; zero stock disallowed by current requirements. All business endpoints require JWT. Browser refresh/logout are documented credential-flow exceptions. No public registration. The seeded administrator is protected in the service layer and database.
