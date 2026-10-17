@@ -18,7 +18,8 @@ public sealed class SqliteAppFactory : WebApplicationFactory<Program>
                 ["ConnectionStrings:Inventory"] = $"Data Source={Path.Combine(_directory, "inventory.db")};Pooling=False",
                 ["BootstrapAdmin:Password"] = "test-only-bootstrap-password",
                 ["Auth:SigningKey"] = "test-only-signing-key-with-at-least-thirty-two-characters",
-                ["Auth:BrowserOrigin"] = "https://localhost:5173"
+                ["Auth:BrowserOrigin"] = "https://localhost:5173",
+                ["EventLogs:Path"] = Path.Combine(_directory, "logs")
             }));
     }
 

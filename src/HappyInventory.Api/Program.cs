@@ -5,16 +5,35 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using HappyInventory.Application.Auth;
+using HappyInventory.Application.Inventory;
+using HappyInventory.Application.Logs;
+using HappyInventory.Application.Users;
 using HappyInventory.Api;
 using HappyInventory.Infrastructure.Auth;
 using HappyInventory.Infrastructure.Data;
+using HappyInventory.Infrastructure.Inventory;
+using HappyInventory.Infrastructure.Logs;
+using HappyInventory.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Serilog;
+using Serilog.Formatting.Json;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+var logDirectory = builder.Configuration["EventLogs:Path"] ??
+    Path.Combine(builder.Environment.ContentRootPath, "data", "logs");
+Directory.CreateDirectory(logDirectory);
+builder.Host.UseSerilog((_, _, logger) => logger
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .WriteTo.Console()
+    .WriteTo.File(new JsonFormatter(renderMessage: true), Path.Combine(logDirectory, "inventory-.json"),
+        rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14, fileSizeLimitBytes: 1_048_576,
+        rollOnFileSizeLimit: true, shared: true));
 
 builder.Services.AddControllers();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -41,6 +60,9 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Inventory") ?? "Data Source=data/inventory.db"));
 builder.Services.AddSingleton(_ => AuthSettings.Load(builder.Configuration, builder.Environment.IsDevelopment()));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IEventLogReader>(new EventLogReader(logDirectory));
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddProblemDetails();
 builder.Services.AddRateLimiter(options =>
@@ -183,6 +205,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 app.UseRouting();
+app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = (diagnostic, context) =>
+    diagnostic.Set("CorrelationId", context.TraceIdentifier));
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
