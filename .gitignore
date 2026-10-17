@@ -6,6 +6,7 @@
 *.db-*
 *.sqlite*
 /data/
+/src/HappyInventory.Api/data/
 *.log
 logs/
 .vs/

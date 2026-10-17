@@ -690,7 +690,8 @@
           "HappyInventory.Application": "[1.0.0, )",
           "HappyInventory.Domain": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.13, )",
-          "Microsoft.Extensions.Identity.Core": "[10.0.13, )"
+          "Microsoft.Extensions.Identity.Core": "[10.0.13, )",
+          "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       }
     }

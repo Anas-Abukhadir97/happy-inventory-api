@@ -16,7 +16,9 @@ public sealed class SqliteAppFactory : WebApplicationFactory<Program>
             new Dictionary<string, string?>
             {
                 ["ConnectionStrings:Inventory"] = $"Data Source={Path.Combine(_directory, "inventory.db")};Pooling=False",
-                ["BootstrapAdmin:Password"] = "test-only-bootstrap-password"
+                ["BootstrapAdmin:Password"] = "test-only-bootstrap-password",
+                ["Auth:SigningKey"] = "test-only-signing-key-with-at-least-thirty-two-characters",
+                ["Auth:BrowserOrigin"] = "https://localhost:5173"
             }));
     }
 

@@ -6,5 +6,14 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="ApplicationName" xml:space="preserve"><value>هابي للمخزون</value></data>
   <data name="ApiDocumentationTitle" xml:space="preserve"><value>توثيق واجهة هابي للمخزون</value></data>
-  <data name="ApiDocumentationDescription" xml:space="preserve"><value>أساسيات المرحلة الأولى. ستضاف عمليات المخزون وتسجيل الدخول في المراحل القادمة. هذا ليس عقد الواجهة النهائي.</value></data>
+  <data name="ApiDocumentationDescription" xml:space="preserve"><value>عمليات المصادقة للمرحلة الثالثة متاحة الآن. عمليات المخزون مخطط لها في العقد المسوّد المنفصل.</value></data>
+  <data name="InvalidCredentials" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value></data>
+  <data name="AccountDisabled" xml:space="preserve"><value>هذا الحساب معطّل. تواصل مع الدعم.</value></data>
+  <data name="InvalidSession" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="InvalidRequest" xml:space="preserve"><value>تحقق من الطلب وحاول مرة أخرى.</value></data>
+  <data name="CsrfFailed" xml:space="preserve"><value>فشل التحقق من أمان الجلسة. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="AuthenticationRequired" xml:space="preserve"><value>سجّل الدخول للمتابعة.</value></data>
+  <data name="AccessForbidden" xml:space="preserve"><value>ليست لديك صلاحية الوصول إلى هذا المورد.</value></data>
+  <data name="TooManyAttempts" xml:space="preserve"><value>محاولات تسجيل دخول كثيرة جدًا. حاول مرة أخرى قريبًا.</value></data>
+  <data name="HttpsRequired" xml:space="preserve"><value>يلزم اتصال HTTPS آمن.</value></data>
 </root>
