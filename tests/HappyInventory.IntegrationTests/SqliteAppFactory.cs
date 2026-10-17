@@ -19,7 +19,8 @@ public sealed class SqliteAppFactory : WebApplicationFactory<Program>
                 ["BootstrapAdmin:Password"] = "test-only-bootstrap-password",
                 ["Auth:SigningKey"] = "test-only-signing-key-with-at-least-thirty-two-characters",
                 ["Auth:BrowserOrigin"] = "https://localhost:5173",
-                ["EventLogs:Path"] = Path.Combine(_directory, "logs")
+                ["EventLogs:Path"] = Path.Combine(_directory, "logs"),
+                ["SupplierOutbox:WorkerEnabled"] = "false"
             }));
     }
 

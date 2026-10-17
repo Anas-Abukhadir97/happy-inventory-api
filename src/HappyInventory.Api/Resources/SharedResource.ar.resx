@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="ApplicationName" xml:space="preserve"><value>هابي للمخزون</value></data>
   <data name="ApiDocumentationTitle" xml:space="preserve"><value>توثيق واجهة هابي للمخزون</value></data>
-  <data name="ApiDocumentationDescription" xml:space="preserve"><value>عمليات المصادقة والمخزون ولوحة المعلومات وإدارة المستخدمين والسجلات متاحة الآن. تكاملات المخططات مخطط لها في العقد المسوّد المنفصل.</value></data>
+  <data name="ApiDocumentationDescription" xml:space="preserve"><value>عمليات المصادقة والمخزون ولوحة المعلومات وإدارة المستخدمين والسجلات وخصم المخزون وطلبات الموردين المحلية متاحة الآن.</value></data>
   <data name="InvalidCredentials" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value></data>
   <data name="AccountDisabled" xml:space="preserve"><value>هذا الحساب معطّل. تواصل مع الدعم.</value></data>
   <data name="InvalidSession" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
@@ -20,4 +20,6 @@
   <data name="Conflict" xml:space="preserve"><value>يتعارض هذا التغيير مع البيانات الحالية.</value></data>
   <data name="StaleVersion" xml:space="preserve"><value>تغيّر هذا السجل. أعد تحميله ثم حاول مرة أخرى.</value></data>
   <data name="PreconditionRequired" xml:space="preserve"><value>أعد تحميل السجل قبل تغييره.</value></data>
+  <data name="IdempotencyConflict" xml:space="preserve"><value>استُخدم مفتاح منع التكرار هذا لطلب مختلف.</value></data>
+  <data name="InsufficientStock" xml:space="preserve"><value>سيؤدي هذا الخصم إلى بقاء أقل من قطعة واحدة في المخزون.</value></data>
 </root>
