@@ -26,6 +26,14 @@ Run the Development launch profile above, then open http://localhost:5081/swagge
 
 An independent Admin/Management client can POST `/api/v1/integrations/inventory-deductions` with `Authorization: Bearer <access-token>`, `Idempotency-Key: order-42-line-1` and `{"externalReference":"order-42-line-1","warehouseId":1,"itemId":2,"quantity":2}`. With stock 5, success returns 200 with `resultQuantity:3` and `replayed:false`. Retry the identical request with the **same** key after an uncertain result: it returns the same `deductionId`, `resultQuantity:3` and `replayed:true`, without a second decrement. Reusing the key with changed payload returns 409 `idempotency_conflict`; a request that would leave zero returns 409 `insufficient_stock`; a wrong warehouse/item returns 404. Keys are printable ASCII, 1–128 characters, scoped to the caller and retained without expiry. `POST /api/v1/supplier-orders` prepares a manual request and local-test outbox entry; `GET /api/v1/supplier-orders` reports Pending/Sent/Failed, where Sent means recorded locally. No supplier is contacted.
 
+## Local containers and persistence
+
+Clone the web repository beside this one (`../frontend`). Copy `.env.example` to an ignored `.env`, then set a random signing key of at least 32 UTF-8 bytes and a strong first-admin password. Keep the signing key stable across restarts or existing access tokens will fail. From this directory, run `docker compose up -d --build` and open `https://localhost:8443`. Caddy uses its own local CA; trust its certificate for browser use. The HTTPS listener is bound to host loopback only. The API is on a private Compose network and runs as the .NET non-root UID; the web image runs as UID 10001. The API container name prevents accidental horizontal scaling against the single SQLite file. Authenticated `/api/v1/health` reports database readiness; internal `/health/live` and `/health/ready` are loopback-only probes and are not routed by Caddy.
+
+The `inventory_data` named volume holds SQLite and JSON logs. `docker compose restart api` preserves them. `docker compose down` also preserves the volume; **`docker compose down -v` deletes it**. Run `python scripts/sqlite_volume.py backup` for a SQLite online backup under ignored `backups/`. Run `python scripts/sqlite_volume.py restore backups/<name>.db` to stop the API, verify and replace its database, and restart it; restore replaces current data. Keep a copy of each backup outside the Docker host and protect it as sensitive data. CI proves clean start, non-root UIDs, HTTPS proxy/authenticated health, restart persistence and backup/restore on an ephemeral runner.
+
+`compose.release.yaml` is the same topology without builds and requires `API_IMAGE` and `WEB_IMAGE` set to the tested `ghcr.io/...@sha256:...` pair. Each repository publishes its own commit-tagged image to GHCR only after its checks pass on `main`; the uploaded digest artifact identifies the immutable image. The release manifest in `releases/` records the tested pair. Registry package visibility is checked separately from source visibility. These local containers are not Azure deployment; Azure remains Phase 8 behind the cost decision.
+
 ## Verify
 
 ```sh
@@ -38,7 +46,7 @@ dotnet format HappyInventory.sln --verify-no-changes --no-restore
 dotnet test HappyInventory.sln -c Release --no-build --collect:"XPlat Code Coverage" --logger trx --results-directory artifacts/tests
 ```
 
-Integration tests verify deny-by-default routing, real SQLite migrations and seeding, database constraints, money conversion, CSRF/Origin checks, refresh rotation, account invalidation, warehouse/item/user CRUD, ETags, page caps, dashboards, roles, log access, atomic deductions and supplier outbox retry. Independent CI runs these checks. Container builds and publishing arrive in Phase 6.
+Integration tests verify deny-by-default routing, real SQLite migrations and seeding, database constraints, money conversion, CSRF/Origin checks, refresh rotation, account invalidation, warehouse/item/user CRUD, ETags, page caps, dashboards, roles, log access, atomic deductions, supplier outbox retry and authenticated health. Independent CI runs these checks plus the Compose persistence/restore test and image publication.
 
 ## Design and roadmap
 
@@ -46,7 +54,7 @@ Domain -> no infrastructure; Application -> Domain; Infrastructure -> Applicatio
 
 See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract. Print view is in the web repository. Production bootstrap and JWT secrets have no default.
 
-Azure is the final planned phase, not yet provisioned; it requires approved cost/topology. SQLite is intended for a single API instance on persistent local disk. Backups, restore, containers, release manifests and deployment workflows will be verified in later phases. Live supplier delivery is unconfigured and requires explicit authorization.
+Azure is the final planned phase, not yet provisioned; it requires approved cost/topology. SQLite is limited to the single API instance on persistent local disk. Live supplier delivery is unconfigured and requires explicit authorization.
 
 ## Future features and license
 

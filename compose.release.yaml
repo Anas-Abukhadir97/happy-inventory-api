@@ -1,0 +1,42 @@
+name: happy-inventory
+services:
+  api:
+    image: ${API_IMAGE:?Set API_IMAGE to the tested immutable digest}
+    container_name: happy-inventory-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Inventory: Data Source=/app/data/inventory.db
+      EventLogs__Path: /app/data/logs
+      BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:?Set BOOTSTRAP_ADMIN_PASSWORD in .env}
+      Auth__SigningKey: ${AUTH_SIGNING_KEY:?Set AUTH_SIGNING_KEY in .env}
+      Auth__BrowserOrigin: ${AUTH_BROWSER_ORIGIN:-https://localhost:8443}
+      ReverseProxy__KnownProxy: 172.29.63.10
+    volumes:
+      - inventory_data:/app/data
+    networks:
+      private: {}
+  web:
+    image: ${WEB_IMAGE:?Set WEB_IMAGE to the tested immutable digest}
+    container_name: happy-inventory-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:${HTTPS_PORT:-8443}:8443
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      private:
+        ipv4_address: 172.29.63.10
+volumes:
+  inventory_data:
+  caddy_data:
+  caddy_config:
+networks:
+  private:
+    ipam:
+      config:
+        - subnet: 172.29.63.0/24
