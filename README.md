@@ -1,10 +1,10 @@
 # Happy Inventory API
 
-ASP.NET Core .NET 10 foundations for Happy Inventory. Personal owner: [Anas-Abukhadir97](https://github.com/Anas-Abukhadir97). Companion: [happy-inventory-web](https://github.com/Anas-Abukhadir97/happy-inventory-web).
+ASP.NET Core .NET 10 API for Happy Inventory. Personal owner: [Anas-Abukhadir97](https://github.com/Anas-Abukhadir97). Companion: [happy-inventory-web](https://github.com/Anas-Abukhadir97/happy-inventory-web).
 
 ## Status
 
-Phase 1: N-tier project boundaries, locked dependency restore, localization resources, fail-closed API host, integration-test harness and CI. Business endpoints, login/refresh, EF Core persistence are **not implemented yet**. Development Swagger is available, but the business contract is not frozen. Business/public-port requests currently return 401; this is intentional. Development-only Swagger uses a separate loopback listener. No demo credentials work at this stage.
+Phase 2: EF Core SQLite schema and migrations, role/country/first-admin seeding, a draft versioned OpenAPI contract, and independent CI contract checks are implemented. Business endpoints and login/refresh are **not implemented yet**. Development Swagger describes the live host, which still has no business operations; the planned contract is [openapi.v1.json](docs/contracts/openapi.v1.json). Business/public-port requests still return 401. Development-only Swagger uses a separate loopback listener. The seeded demo credentials cannot authenticate until Phase 3.
 
 ## Local setup
 
@@ -18,28 +18,31 @@ dotnet restore HappyInventory.sln --locked-mode
 dotnet run --project src/HappyInventory.Api --launch-profile http
 ```
 
-The sibling frontend proxy targets port 5080. Local HTTP has no real authentication credentials in Phase 1. Secure-cookie development transport will be decided before authentication is implemented. No environment file is loaded automatically; .env.example documents planned host settings. No secret is needed for the scaffold.
+The sibling frontend proxy targets port 5080. The development database is `data/inventory.db` and is migrated on startup. First development startup seeds `admin@happywarehouse.com` with demo-only password `P@ssw0rd`; no login works yet. Production requires `ConnectionStrings__Inventory` pointing to persistent SQLite storage and `BootstrapAdmin__Password` before first startup; set `BootstrapAdmin__Email` to override the default email. Do not use the demo password in production. No environment file is loaded automatically. Secure cookie transport will be implemented in Phase 3.
 
 ## Swagger
 
-Run the Development launch profile above, then open http://localhost:5081/swagger. OpenAPI JSON: http://localhost:5081/swagger/v1/swagger.json. The API port remains 5080; documentation is unavailable there and disabled in Production. Swagger uses its own loopback listener, and the gate checks the actual connection port instead of Host headers. The Authorize dialog supports bearer JWTs without persisting authorization in browser storage. There are no business operations to try until later phases. Custom documentation title/description use the existing en/ar resources.
+Run the Development launch profile above, then open http://localhost:5081/swagger. Live-host OpenAPI JSON: http://localhost:5081/swagger/v1/swagger.json. The API port remains 5080; documentation is unavailable there and disabled in Production. Swagger uses its own loopback listener, and the gate checks the actual connection port instead of Host headers. The Authorize dialog supports bearer JWTs without persisting authorization in browser storage. There are no business operations to try until later phases. The separately versioned [draft contract](docs/contracts/README.md) specifies planned operations. Custom documentation title/description use the existing en/ar resources.
 
 ## Verify
 
 ```sh
 dotnet restore HappyInventory.sln --locked-mode
+dotnet tool restore
+python scripts/generate_contract.py --check
+python scripts/validate_contract.py
 dotnet build HappyInventory.sln -c Release --no-restore
 dotnet format HappyInventory.sln --verify-no-changes --no-restore
 dotnet test HappyInventory.sln -c Release --no-build --collect:"XPlat Code Coverage" --logger trx --results-directory artifacts/tests
 ```
 
-Integration tests verify deny-by-default routing, rejected arbitrary bearer credentials, and en/ar resource resolution. UnitTests is intentionally empty until domain/application behavior exists; no artificial passing tests or business coverage claims. Independent CI runs these checks. Container builds and publishing arrive in Phase 6.
+Integration tests verify deny-by-default routing, rejected arbitrary bearer credentials, en/ar resource resolution, real SQLite migrations and seeding, database constraints and money conversion. UnitTests is intentionally empty until application behavior exists. Independent CI runs these checks. Container builds and publishing arrive in Phase 6.
 
 ## Design and roadmap
 
 Domain -> no infrastructure; Application -> Domain; Infrastructure -> Application/Domain; Api -> Application/Infrastructure. Controllers and services will be added in later phases. Use existing .resx resources for API-owned text.
 
-See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), and [phase evidence](docs/phase-1.md). Phase 2 owns the canonical OpenAPI contract; web will pin it. Secure refresh, inventory CRUD, users, dashboard, logs, print view and bounded external integrations are planned current scope. Demo-only bootstrap credentials will be documented when seeding exists; production secrets will never have defaults.
+See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 2 evidence](docs/phase-2.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract. Secure refresh, inventory CRUD, users, dashboard, logs, print view and bounded external integrations are planned later phases. Production bootstrap passwords have no default.
 
 Azure is the final planned phase, not yet provisioned; it requires approved cost/topology. SQLite is intended for a single API instance on persistent local disk. Backups, restore, containers, release manifests and deployment workflows will be verified in later phases. Live supplier delivery is unconfigured and requires explicit authorization.
 

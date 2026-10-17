@@ -1,6 +1,6 @@
 # Project instructions
 
-Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and future contract. Work within the authorized phase; current scope is Phase 1 foundations.
+Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and versioned contract. Work within the phase authorized by the user; Phase 2 is complete and Phase 3 is next.
 
 Use the existing localization system for all new or changed user-facing text, including labels, validation, notifications and accessibility text. Reuse resource keys or add them to existing en/ar resources. Preserve authorization role identifiers Admin/Management/Auditor and backend-owned messages.
 
@@ -11,4 +11,4 @@ Use focused Conventional Commits and feature branches/PRs. Run relevant checks a
 ## Backend boundaries and checks
 Domain has no dependencies; Application references Domain; Infrastructure implements Application ports; Api composes them. No DbContext in controllers. Schema/migrations/auth have one writer. Use real SQLite integration tests when persistence exists. Localized API-owned resources live in src/HappyInventory.Api/Resources/*.resx.
 
-Run dotnet restore HappyInventory.sln --locked-mode, dotnet build HappyInventory.sln -c Release --no-restore, dotnet format HappyInventory.sln --verify-no-changes --no-restore, and dotnet test HappyInventory.sln -c Release --no-build. No canonical OpenAPI contract exists before Phase 2; do not invent endpoints in web.
+Run dotnet restore HappyInventory.sln --locked-mode, python scripts/generate_contract.py --check, python scripts/validate_contract.py, dotnet build HappyInventory.sln -c Release --no-restore, dotnet format HappyInventory.sln --verify-no-changes --no-restore, and dotnet test HappyInventory.sln -c Release --no-build. The draft OpenAPI is canonical for planned routes, but does not mean runtime endpoints exist.

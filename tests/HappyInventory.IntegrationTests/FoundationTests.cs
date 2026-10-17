@@ -10,8 +10,8 @@ using Swashbuckle.AspNetCore.Swagger;
 
 namespace HappyInventory.IntegrationTests;
 
-public sealed class FoundationTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+public sealed class FoundationTests(SqliteAppFactory factory)
+    : IClassFixture<SqliteAppFactory>
 {
     [Theory]
     [InlineData("/")]

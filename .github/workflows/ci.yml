@@ -23,6 +23,9 @@ jobs:
           cache: true
           cache-dependency-path: '**/packages.lock.json'
       - run: dotnet restore HappyInventory.sln --locked-mode
+      - run: python3 scripts/generate_contract.py --check
+      - run: python3 scripts/validate_contract.py
+      - run: dotnet tool restore
       - run: dotnet build HappyInventory.sln --configuration Release --no-restore
       - run: dotnet format HappyInventory.sln --verify-no-changes --no-restore
       - run: dotnet test HappyInventory.sln --configuration Release --no-build --collect:"XPlat Code Coverage" --logger trx --results-directory artifacts/tests
