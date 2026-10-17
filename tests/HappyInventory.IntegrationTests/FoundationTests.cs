@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace HappyInventory.IntegrationTests;
@@ -80,6 +81,36 @@ public sealed class FoundationTests(SqliteAppFactory factory)
             context.Request.Path = "/api/v1/auth/login";
         });
         Assert.Equal(400, response.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task OptInSpaUsesSameOriginWithoutMaskingUnknownApiRoutes()
+    {
+        var webRoot = Path.Combine(Path.GetTempPath(), "happy-inventory-spa-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(webRoot);
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "index.html"), "<html>SPA fixture</html>");
+        try
+        {
+            using var host = factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseWebRoot(webRoot);
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
+                    new Dictionary<string, string?> { ["Web:ServeSpa"] = "true" }));
+            });
+            using var client = host.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri("https://localhost")
+            });
+            Assert.Contains("SPA fixture", await client.GetStringAsync("/"));
+            Assert.Contains("SPA fixture", await client.GetStringAsync("/warehouses"));
+            Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/does-not-exist")).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/warehouses")).StatusCode);
+        }
+        finally
+        {
+            Directory.Delete(webRoot, recursive: true);
+        }
     }
 
     [Theory]

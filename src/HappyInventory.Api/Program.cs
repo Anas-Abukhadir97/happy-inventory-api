@@ -21,6 +21,7 @@ using HappyInventory.Infrastructure.Integrations;
 using HappyInventory.Infrastructure.Logs;
 using HappyInventory.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -30,8 +31,13 @@ using Serilog.Formatting.Json;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+var appServiceHome = builder.Configuration.GetValue<bool>("Storage:UseAppServiceHome")
+    ? Environment.GetEnvironmentVariable("HOME") ?? throw new InvalidOperationException("App Service HOME is required.")
+    : null;
+if (appServiceHome is not null && !Path.IsPathFullyQualified(appServiceHome))
+    throw new InvalidOperationException("App Service HOME must be an absolute path.");
 var logDirectory = builder.Configuration["EventLogs:Path"] ??
-    Path.Combine(builder.Environment.ContentRootPath, "data", "logs");
+    Path.Combine(appServiceHome ?? builder.Environment.ContentRootPath, "data", "logs");
 Directory.CreateDirectory(logDirectory);
 builder.Host.UseSerilog((_, _, logger) => logger
     .MinimumLevel.Information()
@@ -62,8 +68,20 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         return new ObjectResult(problem) { StatusCode = 400, ContentTypes = { "application/problem+json" } };
     };
 });
-builder.Services.AddDbContext<InventoryDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Inventory") ?? "Data Source=data/inventory.db"));
+builder.Services.AddDbContext<InventoryDbContext>((provider, options) =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    if (appServiceHome is not null && configuration.GetConnectionString("Inventory") is not null)
+        throw new InvalidOperationException("Do not configure an inventory connection string with Storage:UseAppServiceHome.");
+    var inventoryConnection = appServiceHome is null
+        ? configuration.GetConnectionString("Inventory") ?? "Data Source=data/inventory.db"
+        : new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(appServiceHome, "data", "inventory.db"),
+            Pooling = false
+        }.ToString();
+    options.UseSqlite(inventoryConnection);
+});
 builder.Services.AddSingleton(_ => AuthSettings.Load(builder.Configuration, builder.Environment.IsDevelopment()));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -231,6 +249,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 app.UseRouting();
+// Azure's free App Service hosts the compiled SPA and API on one HTTPS origin.
+// This is opt-in so API-only deployments and development keep their current routing.
+if (app.Configuration.GetValue<bool>("Web:ServeSpa"))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
 app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = (diagnostic, context) =>
     diagnostic.Set("CorrelationId", context.TraceIdentifier));
 app.UseRateLimiter();
@@ -244,6 +269,12 @@ app.MapGet("/health/ready", async (HttpContext context, IHealthService health, C
     return await health.IsReadyAsync(ct) ? Results.NoContent() : Results.StatusCode(503);
 }).AllowAnonymous();
 app.MapControllers();
+if (app.Configuration.GetValue<bool>("Web:ServeSpa"))
+{
+    // Unknown API paths must never receive the SPA shell.
+    app.Map("/api/{**path}", () => Results.NotFound()).AllowAnonymous();
+    app.MapFallbackToFile("index.html").AllowAnonymous();
+}
 app.Run();
 
 static bool IsLocalProbe(HttpContext context) =>
