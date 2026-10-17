@@ -4,7 +4,7 @@ ASP.NET Core .NET 10 API for Happy Inventory. Personal owner: [Anas-Abukhadir97]
 
 ## Status
 
-Phase 4: authentication plus warehouse/item/user CRUD, dashboard, lookup and Admin-only log endpoints are live. Writes enforce roles and `If-Match` ETags; lists have a hard 10-row page limit. Serilog writes structured daily JSON files under ignored `data/logs`, with 14 retained files and 1 MiB rolling segments. [Phase 4 evidence](docs/phase-4.md) describes coverage and limitations. eCommerce deductions and supplier-order delivery remain Phase 4A work. Development Swagger describes live endpoints; the full planned contract is [openapi.v1.json](docs/contracts/openapi.v1.json). Business routes return 401 without a token. Development-only Swagger uses a separate loopback listener.
+Phase 4A: authentication, assessment CRUD/dashboard/logs, atomic eCommerce deductions and a manual supplier-order outbox with local test delivery are live. Writes enforce roles and `If-Match` ETags for CRUD; lists have a hard 10-row page limit. Serilog writes structured daily JSON files under ignored `data/logs`, with 14 retained files and 1 MiB rolling segments. [Phase 4A evidence](docs/phase-4a.md) describes behavior and limitations. Development Swagger describes live endpoints; the full contract is [openapi.v1.json](docs/contracts/openapi.v1.json). Business routes return 401 without a token. Development-only Swagger uses a separate loopback listener.
 
 ## Local setup
 
@@ -22,7 +22,7 @@ The sibling frontend proxy targets port 5080 from an HTTPS page at `https://loca
 
 ## Swagger
 
-Run the Development launch profile above, then open http://localhost:5081/swagger. Live-host OpenAPI JSON: http://localhost:5081/swagger/v1/swagger.json. The API port remains 5080; documentation is unavailable there and disabled in Production. Swagger uses its own loopback listener, and the gate checks the actual connection port instead of Host headers. The Authorize dialog supports bearer JWTs without persisting authorization in browser storage. Auth and Phase 4 assessment operations are live; diagram-integration operations remain in the separately versioned [draft contract](docs/contracts/README.md). Browser-mode login requires a CSRF cookie/header and exact HTTPS Origin, so use the frontend for that flow. For an independent local client, POST `/api/v1/auth/login` with `{"email":"admin@happywarehouse.com","password":"P@ssw0rd","sessionMode":"external"}` and send the returned access token as `Authorization: Bearer …` to `/api/v1/auth/me`. External mode sets no refresh cookie. Use HTTPS outside local development.
+Run the Development launch profile above, then open http://localhost:5081/swagger. Live-host OpenAPI JSON: http://localhost:5081/swagger/v1/swagger.json. The API port remains 5080; documentation is unavailable there and disabled in Production. Swagger uses its own loopback listener, and the gate checks the actual connection port instead of Host headers. The Authorize dialog supports bearer JWTs without persisting authorization in browser storage. Auth, assessment and Phase 4A diagram-integration operations are live and described by the versioned [contract](docs/contracts/README.md). Browser-mode login requires a CSRF cookie/header and exact HTTPS Origin, so use the frontend for that flow. For an independent local client, POST `/api/v1/auth/login` with `{"email":"admin@happywarehouse.com","password":"P@ssw0rd","sessionMode":"external"}` and send the returned access token as `Authorization: Bearer …` to `/api/v1/auth/me`. External mode sets no refresh cookie. Use HTTPS outside local development.
 
 ## Verify
 
@@ -36,13 +36,13 @@ dotnet format HappyInventory.sln --verify-no-changes --no-restore
 dotnet test HappyInventory.sln -c Release --no-build --collect:"XPlat Code Coverage" --logger trx --results-directory artifacts/tests
 ```
 
-Integration tests verify deny-by-default routing, real SQLite migrations and seeding, database constraints, money conversion, CSRF/Origin checks, refresh rotation, account invalidation, warehouse/item/user CRUD, ETags, page caps, dashboards, roles and log access. Independent CI runs these checks. Container builds and publishing arrive in Phase 6.
+Integration tests verify deny-by-default routing, real SQLite migrations and seeding, database constraints, money conversion, CSRF/Origin checks, refresh rotation, account invalidation, warehouse/item/user CRUD, ETags, page caps, dashboards, roles, log access, atomic deductions and supplier outbox retry. Independent CI runs these checks. Container builds and publishing arrive in Phase 6.
 
 ## Design and roadmap
 
 Domain -> no infrastructure; Application -> Domain; Infrastructure -> Application/Domain; Api -> Application/Infrastructure. Controllers use application service interfaces; EF Core remains in Infrastructure. Use existing .resx resources for API-owned text.
 
-See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4 evidence](docs/phase-4.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract. Print view is in the web repository. Bounded external integrations are Phase 4A. Production bootstrap and JWT secrets have no default.
+See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract. Print view is in the web repository. Production bootstrap and JWT secrets have no default.
 
 Azure is the final planned phase, not yet provisioned; it requires approved cost/topology. SQLite is intended for a single API instance on persistent local disk. Backups, restore, containers, release manifests and deployment workflows will be verified in later phases. Live supplier delivery is unconfigured and requires explicit authorization.
 

@@ -6,12 +6,14 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using HappyInventory.Application.Auth;
 using HappyInventory.Application.Inventory;
+using HappyInventory.Application.Integrations;
 using HappyInventory.Application.Logs;
 using HappyInventory.Application.Users;
 using HappyInventory.Api;
 using HappyInventory.Infrastructure.Auth;
 using HappyInventory.Infrastructure.Data;
 using HappyInventory.Infrastructure.Inventory;
+using HappyInventory.Infrastructure.Integrations;
 using HappyInventory.Infrastructure.Logs;
 using HappyInventory.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
@@ -61,6 +63,11 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 builder.Services.AddSingleton(_ => AuthSettings.Load(builder.Configuration, builder.Environment.IsDevelopment()));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IIntegrationService, IntegrationService>();
+builder.Services.AddScoped<ISupplierOutboxDispatcher, SupplierOutboxDispatcher>();
+builder.Services.AddSingleton<ISupplierNotificationAdapter, LocalSupplierNotificationAdapter>();
+if (builder.Configuration.GetValue("SupplierOutbox:WorkerEnabled", true))
+    builder.Services.AddHostedService<SupplierOutboxWorker>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IEventLogReader>(new EventLogReader(logDirectory));
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
