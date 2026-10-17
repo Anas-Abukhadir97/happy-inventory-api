@@ -10,7 +10,7 @@ Verified locally on 17 October 2026. This is foundation evidence, not full appli
 
 ## External verification
 
-Independent CI workflow is prepared. GitHub account authorization, repository publication, hosted CI and branch protection are pending verification; do not infer success from this local record. Clean-checkout verification will be recorded after running against committed source.
+Independent CI workflow is prepared. GitHub account authorization, repository publication, hosted CI and branch protection are pending verification; do not infer success from this local record. Fresh local clones of the committed feature branches passed locked dependency installation, build, formatting and all current tests. Frontend also passed ESLint and TypeScript in that clone.
 
 ## Deferred scope
 
