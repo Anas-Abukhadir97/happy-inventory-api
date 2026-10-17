@@ -5,6 +5,7 @@
 *.db
 *.db-*
 *.sqlite*
+/data/
 *.log
 logs/
 .vs/

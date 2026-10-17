@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using HappyInventory.Api;
+using HappyInventory.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -8,6 +10,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddDbContext<InventoryDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Inventory") ?? "Data Source=data/inventory.db"));
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
@@ -38,6 +42,13 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    await DatabaseInitializer.InitializeAsync(
+        scope.ServiceProvider.GetRequiredService<InventoryDbContext>(),
+        app.Configuration,
+        app.Environment.IsDevelopment());
+}
 app.UseExceptionHandler();
 app.UseRequestLocalization(options => options
     .SetDefaultCulture("en")
