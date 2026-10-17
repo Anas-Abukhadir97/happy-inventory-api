@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="ApplicationName" xml:space="preserve"><value>Happy Inventory</value></data>
   <data name="ApiDocumentationTitle" xml:space="preserve"><value>Happy Inventory API documentation</value></data>
-  <data name="ApiDocumentationDescription" xml:space="preserve"><value>Phase 3 authentication endpoints are live. Inventory endpoints remain planned in the separate draft contract.</value></data>
+  <data name="ApiDocumentationDescription" xml:space="preserve"><value>Authentication, inventory, dashboard, user-management and log endpoints are live. Diagram integrations remain planned in the separate draft contract.</value></data>
   <data name="InvalidCredentials" xml:space="preserve"><value>Invalid email or password.</value></data>
   <data name="AccountDisabled" xml:space="preserve"><value>This account is disabled. Contact support.</value></data>
   <data name="InvalidSession" xml:space="preserve"><value>Your session has ended. Please sign in again.</value></data>
@@ -16,4 +16,8 @@
   <data name="AccessForbidden" xml:space="preserve"><value>You do not have access to this resource.</value></data>
   <data name="TooManyAttempts" xml:space="preserve"><value>Too many sign-in attempts. Try again shortly.</value></data>
   <data name="HttpsRequired" xml:space="preserve"><value>A secure HTTPS connection is required.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>The requested record was not found.</value></data>
+  <data name="Conflict" xml:space="preserve"><value>This change conflicts with existing data.</value></data>
+  <data name="StaleVersion" xml:space="preserve"><value>This record has changed. Reload it and try again.</value></data>
+  <data name="PreconditionRequired" xml:space="preserve"><value>Reload the record before changing it.</value></data>
 </root>
