@@ -10,7 +10,7 @@ Verified locally on 17 October 2026. This is foundation evidence, not full appli
 
 ## External verification
 
-Independent CI workflow is prepared. GitHub account authorization, repository publication, hosted CI and branch protection are pending verification; do not infer success from this local record. Fresh local clones of the committed feature branches passed locked dependency installation, build, formatting and all current tests. Frontend also passed ESLint and TypeScript in that clone.
+Public repository and Phase 1 PR #1 verified under Anas-Abukhadir97. Hosted CI passed for the implementation revision: [run evidence](https://github.com/Anas-Abukhadir97/happy-inventory-api/actions/runs/39021415205). Main requires passing CI, a pull request and resolved conversations; force pushes/deletion are disabled, including for administrators. Checks run again for every revision. Fresh local clones of the committed feature branches passed locked dependency installation, build, formatting and all current tests. Frontend also passed ESLint and TypeScript in that clone.
 
 ## Deferred scope
 
