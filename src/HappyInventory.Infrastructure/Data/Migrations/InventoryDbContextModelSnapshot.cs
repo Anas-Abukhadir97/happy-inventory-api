@@ -208,6 +208,9 @@ namespace HappyInventory.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("RevokedAtUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SecurityVersion")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(64)

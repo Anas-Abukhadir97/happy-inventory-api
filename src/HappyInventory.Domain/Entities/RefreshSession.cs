@@ -5,6 +5,7 @@ public sealed class RefreshSession
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid FamilyId { get; set; }
     public int UserId { get; set; }
+    public int SecurityVersion { get; set; }
     public User User { get; set; } = null!;
     public required string TokenHash { get; set; }
     public DateTime CreatedAtUtc { get; set; }

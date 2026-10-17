@@ -1,6 +1,6 @@
 # Project instructions
 
-Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and versioned contract. Work within the phase authorized by the user; Phase 2 is complete and Phase 3 is next.
+Read README.md and docs/decisions.md before changing behavior. API owns the canonical requirements, backlog and versioned contract. Work within the phase authorized by the user; Phase 3 authentication is complete and Phase 4 is next.
 
 Use the existing localization system for all new or changed user-facing text, including labels, validation, notifications and accessibility text. Reuse resource keys or add them to existing en/ar resources. Preserve authorization role identifiers Admin/Management/Auditor and backend-owned messages.
 

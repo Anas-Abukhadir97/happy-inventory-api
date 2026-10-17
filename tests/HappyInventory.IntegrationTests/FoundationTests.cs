@@ -46,6 +46,7 @@ public sealed class FoundationTests(SqliteAppFactory factory)
         var response = await host.Server.SendAsync(context =>
         {
             context.Request.Method = "GET";
+            context.Request.Scheme = "https";
             context.Request.Path = path;
             // Spoofing Host must not expose docs on the public connection port.
             context.Request.Host = new HostString("localhost", 5081);
@@ -61,6 +62,24 @@ public sealed class FoundationTests(SqliteAppFactory factory)
         var document = provider.GetSwagger("v1");
         Assert.Equal("bearer", document.Components!.SecuritySchemes!["Bearer"].Scheme);
         Assert.NotEmpty(document.Security!);
+        var loginOperations = document.Paths["/api/v1/auth/login"].Operations;
+        Assert.NotNull(loginOperations);
+        var loginOperation = Assert.Single(loginOperations, entry =>
+            string.Equals(entry.Key.ToString(), "Post", StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(loginOperation.Value.Security ?? []);
+    }
+
+    [Fact]
+    public async Task ProductionRejectsPlainHttpBeforeAuthentication()
+    {
+        using var host = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Production"));
+        var response = await host.Server.SendAsync(context =>
+        {
+            context.Request.Method = "POST";
+            context.Request.Scheme = "http";
+            context.Request.Path = "/api/v1/auth/login";
+        });
+        Assert.Equal(400, response.Response.StatusCode);
     }
 
     [Theory]
