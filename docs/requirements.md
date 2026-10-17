@@ -7,7 +7,7 @@
 | JWT, one role, inactive checks, protected admin, refresh rotation/CSRF | 3 | Implemented and integration-tested; see phase-3.md. User-management forms arrive in Phase 4. |
 | Warehouses/items/users CRUD, pagination <=10, dashboard, Admin logs | 4 | Implemented and integration-tested; see phase-4.md. Browser hardening continues in Phase 5. |
 | Idempotent deductions retaining quantity >=1, full print report, local supplier outbox | 4A | Implemented; see phase-4a.md |
-| Browser/SQLite/auth/concurrency/integration acceptance | 5 | Planned |
+| Browser/SQLite/auth/concurrency/integration acceptance | 5 | Implemented; see phase-5.md |
 | Containers, Compose, persistence/restore and separate GHCR images | 6 | Planned |
 | Documentation, tested release pair, source archives | 7 | Planned |
 | Azure, HTTPS, hosted restore/rollback | 8 | Cost approval required |

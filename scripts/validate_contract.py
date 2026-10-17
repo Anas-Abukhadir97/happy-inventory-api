@@ -5,6 +5,7 @@ from pathlib import Path
 
 document = json.loads((Path(__file__).resolve().parents[1] / "docs/contracts/openapi.v1.json").read_text(encoding="utf-8"))
 assert document["openapi"] == "3.1.0"
+assert document["info"]["version"] == "0.2.1-draft"
 schemas = document["components"]["schemas"]
 schemes = document["components"]["securitySchemes"]
 operation_ids = set()
@@ -39,4 +40,7 @@ for path, methods in document["paths"].items():
         for status, response in operation["responses"].items():
             if int(status) >= 400:
                 assert response["content"]["application/problem+json"]["schema"] == {"$ref": "#/components/schemas/Problem"}
+deduct = document["paths"]["/api/v1/integrations/inventory-deductions"]["post"]
+assert deduct["responses"]["200"]["content"]["application/json"]["examples"]["replay"]["value"]["replayed"] is True
+assert set(deduct["responses"]["409"]["content"]["application/problem+json"]["examples"]) == {"changedKey", "insufficient"}
 print(f"Validated {len(operation_ids)} draft operations and {len(schemas)} schemas")

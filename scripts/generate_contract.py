@@ -87,6 +87,7 @@ WAREHOUSE_ID = parameter("id", "path", True, ID)
 ITEM_ID = parameter("itemId", "path", True, ID)
 IF_MATCH = parameter("If-Match", "header", True)
 IDEMPOTENCY = parameter("Idempotency-Key", "header", True, string(128))
+IDEMPOTENCY["description"] = "Printable ASCII (1-128 characters); unique per authenticated caller. Reuse for uncertain retries."
 
 
 def response(status, schema=None, etag=False):
@@ -165,12 +166,57 @@ add("get", "/api/v1/dashboard/items/lowest", "getLowestQuantityItems", roles=ALL
 add("get", "/api/v1/logs", "listLogs", roles=ADMIN, result="PagedLogs", params=PAGE + [parameter("level"), parameter("from", schema=DATE), parameter("to", schema=DATE), SEARCH], errors=(400,))
 add("get", "/api/v1/logs/{id}", "getLog", roles=ADMIN, result="LogDetail", params=[parameter("id", "path", True, COUNT)], errors=(404,))
 add("post", "/api/v1/integrations/inventory-deductions", "deductInventory", roles=WRITE, body="DeductionRequest", result="DeductionResult", params=[IDEMPOTENCY], errors=(400, 404, 409))
+deduct = paths["/api/v1/integrations/inventory-deductions"]["post"]
+deduct["description"] = (
+    "Atomically deduct one item while retaining at least one in stock. A caller/key replay with the same "
+    "payload returns the stored result and replayed=true; a changed payload returns 409 idempotency_conflict. "
+    "Successful keys are retained with inventory history without expiry."
+)
+deduct["requestBody"]["content"]["application/json"]["example"] = {
+    "externalReference": "order-42-line-1", "warehouseId": 1, "itemId": 2, "quantity": 2,
+}
+deduct["responses"]["200"]["content"]["application/json"]["examples"] = {
+    "first": {"summary": "Successful deduction", "value": {
+        "deductionId": "d405fa40-d394-4ce0-83a4-8d20a2c16493", "warehouseId": 1,
+        "itemId": 2, "resultQuantity": 3, "replayed": False,
+    }},
+    "replay": {"summary": "Same caller, key and payload", "value": {
+        "deductionId": "d405fa40-d394-4ce0-83a4-8d20a2c16493", "warehouseId": 1,
+        "itemId": 2, "resultQuantity": 3, "replayed": True,
+    }},
+}
+deduct["responses"]["409"]["description"] = "idempotency_conflict or insufficient_stock"
+deduct["responses"]["409"]["content"]["application/problem+json"]["examples"] = {
+    "changedKey": {"summary": "Key reused with changed payload", "value": {
+        "type": "about:blank", "title": "This idempotency key was already used for a different request.",
+        "status": 409, "code": "idempotency_conflict", "traceId": "example-trace-id",
+    }},
+    "insufficient": {"summary": "Deduction would leave zero stock", "value": {
+        "type": "about:blank", "title": "This deduction would leave fewer than one item in stock.",
+        "status": 409, "code": "insufficient_stock", "traceId": "example-trace-id",
+    }},
+}
 add("get", "/api/v1/supplier-orders", "listSupplierOrders", roles=ALL, result="PagedSupplierOrders", params=PAGE, errors=(400,))
 add("post", "/api/v1/supplier-orders", "createSupplierOrder", roles=WRITE, body="SupplierOrderCreate", result="SupplierOrder", status=201, errors=(400, 404, 409))
+supplier = paths["/api/v1/supplier-orders"]["post"]
+supplier["description"] = (
+    "Manually prepare a supplier request and its outbox message in one transaction. "
+    "Pending/Sent/Failed refer to the local test adapter only; no supplier is contacted."
+)
+supplier["requestBody"]["content"]["application/json"]["example"] = {
+    "warehouseId": 1, "itemId": 2, "requestedQuantity": 10,
+    "supplierDestination": "supplier@example.test",
+}
+supplier["responses"]["201"]["content"]["application/json"]["example"] = {
+    "id": "5b77fe83-5295-4794-a07a-a0e30a9a7629", "warehouseId": 1,
+    "itemId": 2, "requestedQuantity": 10,
+    "supplierDestination": "supplier@example.test", "status": "Pending",
+    "createdAtUtc": "2026-10-17T12:00:00Z",
+}
 add("get", "/api/v1/health", "getHealth", roles=ALL, result="Health", errors=(503,))
 
 contract = {
-    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.2.0-draft"},
+    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.2.1-draft"},
     "servers": [{"url": "http://localhost:5080"}],
     "paths": paths,
     "components": {
