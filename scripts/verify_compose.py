@@ -11,6 +11,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import uuid
 
 from release_pair import image_environment
 from sqlite_volume import backup, restore
@@ -86,6 +87,7 @@ def main() -> None:
     if release_pair:
         os.environ.update(image_environment())
         manifest = json.loads((ROOT / "releases" / "phase-6-tested.json").read_text())
+    name = f"phase6-{uuid.uuid4().hex[:10]}"
     try:
         if release_pair:
             compose("pull")
