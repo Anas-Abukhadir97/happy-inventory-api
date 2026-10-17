@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "happyinventory.application": {
+        "type": "Project",
+        "dependencies": {
+          "HappyInventory.Domain": "[1.0.0, )"
+        }
+      },
+      "happyinventory.domain": {
+        "type": "Project"
+      }
+    }
+  }
+}

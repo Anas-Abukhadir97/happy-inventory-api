@@ -1,0 +1,16 @@
+.git
+*.user
+*.suo
+.env
+.env.*
+**/bin
+**/obj
+node_modules
+dist
+coverage
+**/TestResults
+*.db*
+*.sqlite*
+*.log
+*.pdf
+Happy-Inventory.html

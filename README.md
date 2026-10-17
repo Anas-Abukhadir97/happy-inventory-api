@@ -4,7 +4,7 @@ ASP.NET Core .NET 10 foundations for Happy Inventory. Personal owner: [Anas-Abuk
 
 ## Status
 
-Phase 1: N-tier project boundaries, locked dependency restore, localization resources, fail-closed API host, integration-test harness and CI. Business endpoints, login/refresh, EF Core persistence and OpenAPI are **not implemented yet**. All requests currently return 401; this is intentional. No demo credentials work at this stage.
+Phase 1: N-tier project boundaries, locked dependency restore, localization resources, fail-closed API host, integration-test harness and CI. Business endpoints, login/refresh, EF Core persistence are **not implemented yet**. Development Swagger is available, but the business contract is not frozen. Business/public-port requests currently return 401; this is intentional. Development-only Swagger uses a separate loopback listener. No demo credentials work at this stage.
 
 ## Local setup
 
@@ -15,10 +15,14 @@ git clone https://github.com/Anas-Abukhadir97/happy-inventory-api.git backend
 git clone https://github.com/Anas-Abukhadir97/happy-inventory-web.git frontend
 cd backend
 dotnet restore HappyInventory.sln --locked-mode
-dotnet run --project src/HappyInventory.Api --no-launch-profile --urls http://localhost:5080
+dotnet run --project src/HappyInventory.Api --launch-profile http
 ```
 
 The sibling frontend proxy targets port 5080. Local HTTP has no real authentication credentials in Phase 1. Secure-cookie development transport will be decided before authentication is implemented. No environment file is loaded automatically; .env.example documents planned host settings. No secret is needed for the scaffold.
+
+## Swagger
+
+Run the Development launch profile above, then open http://localhost:5081/swagger. OpenAPI JSON: http://localhost:5081/swagger/v1/swagger.json. The API port remains 5080; documentation is unavailable there and disabled in Production. Swagger uses its own loopback listener, and the gate checks the actual connection port instead of Host headers. The Authorize dialog supports bearer JWTs without persisting authorization in browser storage. There are no business operations to try until later phases. Custom documentation title/description use the existing en/ar resources.
 
 ## Verify
 
