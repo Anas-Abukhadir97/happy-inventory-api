@@ -1,0 +1,83 @@
+name: Azure free demo
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: azure-free-deploy
+  cancel-in-progress: false
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          path: backend
+          persist-credentials: false
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: Anas-Abukhadir97/happy-inventory-web
+          ref: main
+          path: frontend
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: frontend/.node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: dotnet restore HappyInventory.sln --locked-mode
+        working-directory: backend
+      - run: python3 scripts/generate_contract.py --check && python3 scripts/validate_contract.py
+        working-directory: backend
+      - run: dotnet build HappyInventory.sln -c Release --no-restore
+        working-directory: backend
+      - run: dotnet test HappyInventory.sln -c Release --no-build
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run contract:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build
+        working-directory: frontend
+      - name: Publish one same-origin site
+        run: |
+          dotnet publish backend/src/HappyInventory.Api/HappyInventory.Api.csproj -c Release --no-restore -o "$RUNNER_TEMP/site"
+          rm -f "$RUNNER_TEMP/site/appsettings.Development.json"
+          mkdir -p "$RUNNER_TEMP/site/wwwroot"
+          cp -a frontend/dist/. "$RUNNER_TEMP/site/wwwroot/"
+          test -s "$RUNNER_TEMP/site/wwwroot/index.html"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: azure-free-site
+          path: ${{ runner.temp }}/site
+          if-no-files-found: error
+          retention-days: 7
+  deploy:
+    if: vars.AZURE_WEBAPP_NAME != ''
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: azure-free
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: azure-free-site
+          path: site
+      - uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@b686016b4de8820a23519503685d8d03fbfa03a6 # v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          package: site
