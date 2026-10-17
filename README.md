@@ -52,7 +52,7 @@ Integration tests verify deny-by-default routing, real SQLite migrations and see
 
 Domain -> no infrastructure; Application -> Domain; Infrastructure -> Application/Domain; Api -> Application/Infrastructure. Controllers use application service interfaces; EF Core remains in Infrastructure. Use existing .resx resources for API-owned text.
 
-See [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract. Print view is in the web repository. Production bootstrap and JWT secrets have no default.
+See the [reviewer guide](docs/reviewer-guide.md), [architecture](docs/architecture.md), [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract and contains the print view and English/Arabic screenshots. Production bootstrap and JWT secrets have no default.
 
 Azure is the final planned phase, not yet provisioned; it requires approved cost/topology. SQLite is limited to the single API instance on persistent local disk. Live supplier delivery is unconfigured and requires explicit authorization.
 
