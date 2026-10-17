@@ -1,4 +1,6 @@
 .git
+*.user
+*.suo
 .env
 .env.*
 **/bin
