@@ -1,0 +1,22 @@
+# Local/runtime output
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite*
+*.log
+logs/
+.vs/
+.vscode/
+.idea/
+.DS_Store
+# Source assessment material is never published
+*.pdf
+Happy-Inventory.html
+Pasted text.txt
+happy-inventory-strategy.md
+**/bin/
+**/obj/
+**/TestResults/
+artifacts/
