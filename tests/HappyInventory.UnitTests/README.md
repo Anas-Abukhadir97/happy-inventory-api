@@ -1,4 +1,4 @@
 # Unit tests
 
-This project is reserved for Application/Domain behavior introduced in Phase 2 onward.
-No placeholder passing tests or business coverage claims are included in Phase 1.
+These tests cover money conversion boundaries and inventory-name normalization.
+SQLite integration tests cover persistence, constraints, authorization and workflows.
