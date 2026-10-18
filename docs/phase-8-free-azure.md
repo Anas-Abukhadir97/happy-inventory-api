@@ -1,6 +1,8 @@
 # Phase 8 — free Azure demonstration
 
-Status: deployment code is prepared; no Azure subscription or hosted URL has been verified yet. Do not describe this milestone as deployed until the live checks below pass.
+Status (18 October 2026): the release package and GitHub workflows are prepared and pass on both repositories. Azure CLI confirms the owner's enabled **Azure subscription 1** is a Free Trial with its spending limit **On**. Resource group `rg-happy-inventory-free` was created in UAE North, but Azure rejected the Windows F1 App Service plan: **F1 VMs quota 0, usage 0, required 1**. No App Service plan, web app, hosted URL, or paid resource exists. GitHub deployment remains gated because `AZURE_WEBAPP_NAME` is unset. Do not describe this milestone as deployed until quota is available and the live checks below pass.
+
+The Azure F1 quota API also returned 0 in Qatar Central, North Europe, East US, East US 2, Central US, UK South, and Japan East. Some other queried regions returned only a zero `*` total quota. This is a subscription quota restriction, not an application build failure. Azure's [App Service quota guidance](https://learn.microsoft.com/en-us/troubleshoot/azure/app-service/troubleshoot-non-zone-redundant-quota-requests) says free/trial offers may have a zero default and may not support an increase; its [quota quickstart](https://learn.microsoft.com/en-us/azure/quotas/quickstart-increase-quota-portal) says only paid subscriptions can request quota increases. Do not change the subscription offer, create a paid plan, or enable GitHub deployment as a workaround. Once Azure grants **F1 VMs limit 1** in an eligible region, recheck both F1 and total regional limits, create the Windows F1 plan, and continue with the configuration and acceptance below. If Azure requires conversion to a paid subscription, obtain a separate billing decision first, even though F1's base SKU is listed at $0.
 
 ## Hosting decision (17 October 2026)
 

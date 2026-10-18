@@ -54,7 +54,7 @@ Domain -> no infrastructure; Application -> Domain; Infrastructure -> Applicatio
 
 See the [reviewer guide](docs/reviewer-guide.md), [architecture](docs/architecture.md), [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract and contains the print view and English/Arabic screenshots. Production bootstrap and JWT secrets have no default.
 
-The [Phase 8 free Azure runbook](docs/phase-8-free-azure.md) prepares a single Windows App Service F1 site for the API and compiled web app on one HTTPS origin. No Azure subscription or hosted URL has been verified yet. The hosted SQLite option is limited to one process on App Service `%HOME%` storage and requires a live persistence/backup test before Phase 8 can be declared complete. Live supplier delivery is unconfigured and requires explicit authorization.
+The [Phase 8 free Azure runbook](docs/phase-8-free-azure.md) prepares a single Windows App Service F1 site for the API and compiled web app on one HTTPS origin. The owner's Azure Free Trial subscription is enabled, but Azure currently grants **zero F1 VMs quota**, so the free plan could not be created and there is no hosted URL. The hosted SQLite option is limited to one process on App Service `%HOME%` storage and requires a live persistence/backup test before Phase 8 can be declared complete. Live supplier delivery is unconfigured and requires explicit authorization.
 
 ## Future features and license
 
