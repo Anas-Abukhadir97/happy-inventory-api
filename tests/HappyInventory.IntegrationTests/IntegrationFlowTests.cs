@@ -163,8 +163,17 @@ public sealed class IntegrationFlowTests
                 BEGIN SELECT RAISE(ABORT, 'simulated insert failure'); END;
                 """);
         }
-        using var failed = await client.SendAsync(Deduction(warehouse, item, 2, "failed-record"));
+        using var failedRequest = Deduction(warehouse, item, 2, "failed-record");
+        failedRequest.Headers.AcceptLanguage.ParseAdd("ar");
+        using var failed = await client.SendAsync(failedRequest);
         Assert.Equal(HttpStatusCode.InternalServerError, failed.StatusCode);
+        Assert.Equal("application/problem+json", failed.Content.Headers.ContentType?.MediaType);
+        var problem = await failed.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("internal_error", problem.GetProperty("code").GetString());
+        Assert.Equal("حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى لاحقًا.",
+            problem.GetProperty("title").GetString());
+        Assert.False(string.IsNullOrWhiteSpace(problem.GetProperty("traceId").GetString()));
+        Assert.DoesNotContain("simulated", problem.ToString(), StringComparison.OrdinalIgnoreCase);
         using var read = await client.GetAsync($"/api/v1/warehouses/{warehouse}/items/{item}");
         Assert.Equal(5, (await read.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("qty").GetInt32());
         using var check = factory.Services.CreateScope();

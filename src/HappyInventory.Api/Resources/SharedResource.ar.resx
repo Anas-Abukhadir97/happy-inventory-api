@@ -23,5 +23,6 @@
   <data name="IdempotencyConflict" xml:space="preserve"><value>استُخدم مفتاح منع التكرار هذا لطلب مختلف.</value></data>
   <data name="InsufficientStock" xml:space="preserve"><value>سيؤدي هذا الخصم إلى بقاء أقل من قطعة واحدة في المخزون.</value></data>
   <data name="ServiceUnavailable" xml:space="preserve"><value>الخدمة غير متاحة مؤقتًا.</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى لاحقًا.</value></data>
   <data name="NotificationChannelUnavailable" xml:space="preserve"><value>قناة الإشعارات هذه غير مهيأة.</value></data>
 </root>

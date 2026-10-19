@@ -54,7 +54,7 @@ Integration tests verify deny-by-default routing, real SQLite migrations and see
 
 ## Design and roadmap
 
-Domain -> no infrastructure; Application -> Domain; Infrastructure -> Application/Domain; Api -> Application/Infrastructure. Controllers use application service interfaces; EF Core remains in Infrastructure. Use existing .resx resources for API-owned text.
+Domain -> no infrastructure; Application -> Domain; Infrastructure -> Application/Domain; Api -> Application/Infrastructure. Controllers use application service interfaces; EF Core remains in Infrastructure. `ServiceRegistration.cs` composes the API dependencies, while `Program.cs` orders the request pipeline. Unexpected exceptions return localized problem details with a trace ID and no provider error text. Use existing .resx resources for API-owned text.
 
 See the [reviewer guide](docs/reviewer-guide.md), [architecture](docs/architecture.md), [requirements](docs/requirements.md), [decisions](docs/decisions.md), [backlog](docs/backlog.md), [Phase 4A evidence](docs/phase-4a.md) and [contract](docs/contracts/README.md). The web repository pins a checksum of this contract and contains the print view and English/Arabic screenshots. Production bootstrap and JWT secrets have no default.
 
