@@ -181,6 +181,58 @@ namespace HappyInventory.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HappyInventory.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmailStatus")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RecipientUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SenderUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SmsStatus")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.HasIndex("RecipientUserId", "CreatedAtUtc");
+
+                    b.ToTable("Notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Notifications_EmailStatus", "\"EmailStatus\" IN ('NotRequested', 'Pending', 'Sent', 'Failed')");
+
+                            t.HasCheckConstraint("CK_Notifications_SmsStatus", "\"SmsStatus\" IN ('NotRequested', 'Pending', 'Sent', 'Failed')");
+                        });
+                });
+
             modelBuilder.Entity("HappyInventory.Domain.Entities.RefreshSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -529,6 +581,25 @@ namespace HappyInventory.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("HappyInventory.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("HappyInventory.Domain.Entities.User", "RecipientUser")
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HappyInventory.Domain.Entities.User", "SenderUser")
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RecipientUser");
+
+                    b.Navigation("SenderUser");
                 });
 
             modelBuilder.Entity("HappyInventory.Domain.Entities.RefreshSession", b =>

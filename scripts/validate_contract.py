@@ -5,7 +5,7 @@ from pathlib import Path
 
 document = json.loads((Path(__file__).resolve().parents[1] / "docs/contracts/openapi.v1.json").read_text(encoding="utf-8"))
 assert document["openapi"] == "3.1.0"
-assert document["info"]["version"] == "0.2.1-draft"
+assert document["info"]["version"] == "0.3.0-draft"
 schemas = document["components"]["schemas"]
 schemes = document["components"]["securitySchemes"]
 operation_ids = set()

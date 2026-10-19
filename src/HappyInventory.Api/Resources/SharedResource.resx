@@ -23,4 +23,5 @@
   <data name="PreconditionRequired" xml:space="preserve"><value>Reload the record before changing it.</value></data>
   <data name="IdempotencyConflict" xml:space="preserve"><value>This idempotency key was already used for a different request.</value></data>
   <data name="InsufficientStock" xml:space="preserve"><value>This deduction would leave fewer than one item in stock.</value></data>
+  <data name="NotificationChannelUnavailable" xml:space="preserve"><value>This notification channel is not configured.</value></data>
 </root>

@@ -15,9 +15,26 @@ public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> opti
     public DbSet<InventoryDeduction> InventoryDeductions => Set<InventoryDeduction>();
     public DbSet<SupplierOrderRequest> SupplierOrderRequests => Set<SupplierOrderRequest>();
     public DbSet<SupplierOutboxMessage> SupplierOutboxMessages => Set<SupplierOutboxMessage>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notifications", table =>
+            {
+                table.HasCheckConstraint("CK_Notifications_EmailStatus", "\"EmailStatus\" IN ('NotRequested', 'Pending', 'Sent', 'Failed')");
+                table.HasCheckConstraint("CK_Notifications_SmsStatus", "\"SmsStatus\" IN ('NotRequested', 'Pending', 'Sent', 'Failed')");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Title).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Body).HasMaxLength(1000).IsRequired();
+            entity.Property(x => x.EmailStatus).HasMaxLength(12).IsRequired();
+            entity.Property(x => x.SmsStatus).HasMaxLength(12).IsRequired();
+            entity.HasIndex(x => new { x.RecipientUserId, x.CreatedAtUtc });
+            entity.HasOne(x => x.RecipientUser).WithMany().HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.SenderUser).WithMany().HasForeignKey(x => x.SenderUserId).OnDelete(DeleteBehavior.Restrict);
+        });
         model.Entity<Role>(entity =>
         {
             entity.ToTable("Roles");

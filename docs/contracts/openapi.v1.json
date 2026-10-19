@@ -423,6 +423,122 @@
         ],
         "type": "object"
       },
+      "Notification": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "createdAtUtc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "emailStatus": {
+            "enum": [
+              "NotRequested",
+              "Pending",
+              "Sent",
+              "Failed"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "readAtUtc": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recipientUserId": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "senderUserId": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "smsStatus": {
+            "enum": [
+              "NotRequested",
+              "Pending",
+              "Sent",
+              "Failed"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "recipientUserId",
+          "senderUserId",
+          "title",
+          "body",
+          "emailStatus",
+          "smsStatus",
+          "createdAtUtc",
+          "readAtUtc"
+        ],
+        "type": "object"
+      },
+      "NotificationCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "recipientUserId": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sendEmail": {
+            "type": "boolean"
+          },
+          "sendSms": {
+            "type": "boolean"
+          },
+          "smsPhoneNumber": {
+            "oneOf": [
+              {
+                "maxLength": 16,
+                "pattern": "^\\+[1-9][0-9]{6,14}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "maxLength": 120,
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipientUserId",
+          "title",
+          "body",
+          "sendEmail",
+          "sendSms"
+        ],
+        "type": "object"
+      },
       "PagedItems": {
         "additionalProperties": false,
         "properties": {
@@ -466,6 +582,43 @@
           "items": {
             "items": {
               "$ref": "#/components/schemas/LogSummary"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "pageSize": {
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "totalCount": {
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          },
+          "totalPages": {
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "totalPages"
+        ],
+        "type": "object"
+      },
+      "PagedNotifications": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Notification"
             },
             "type": "array"
           },
@@ -1037,7 +1190,7 @@
   },
   "info": {
     "title": "Happy Inventory API",
-    "version": "0.2.1-draft"
+    "version": "0.3.0-draft"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1942,6 +2095,296 @@
         ],
         "x-roles": [
           "Admin"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "listNotifications",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedNotifications"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "x-roles": [
+          "Admin",
+          "Management",
+          "Auditor"
+        ]
+      },
+      "post": {
+        "operationId": "createNotification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "x-roles": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/notifications/stream": {
+      "get": {
+        "description": "Authenticated server-sent event stream. Each notification event carries only its ID; reload the list on receipt. The stream closes at access-token expiry.",
+        "operationId": "streamNotifications",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "x-roles": [
+          "Admin",
+          "Management",
+          "Auditor"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "post": {
+        "operationId": "markNotificationRead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "x-roles": [
+          "Admin",
+          "Management",
+          "Auditor"
         ]
       }
     },
