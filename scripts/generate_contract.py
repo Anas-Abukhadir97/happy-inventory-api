@@ -66,10 +66,12 @@ schemas = {
     "DeductionResult": obj({"deductionId": UUID, "warehouseId": ID, "itemId": ID, "resultQuantity": QTY, "replayed": BOOLEAN}, "deductionId", "warehouseId", "itemId", "resultQuantity", "replayed"),
     "SupplierOrderCreate": obj({"warehouseId": ID, "itemId": ID, "requestedQuantity": QTY, "supplierDestination": string(254)}, "warehouseId", "itemId", "requestedQuantity", "supplierDestination"),
     "SupplierOrder": obj({"id": UUID, "warehouseId": ID, "itemId": ID, "requestedQuantity": QTY, "supplierDestination": string(254), "status": {"type": "string", "enum": ["Pending", "Sent", "Failed"]}, "createdAtUtc": DATE}, "id", "warehouseId", "itemId", "requestedQuantity", "supplierDestination", "status", "createdAtUtc"),
+    "NotificationCreate": obj({"recipientUserId": ID, "title": string(120), "body": string(1000), "sendEmail": BOOLEAN, "sendSms": BOOLEAN, "smsPhoneNumber": {"oneOf": [string(16, pattern=r"^\+[1-9][0-9]{6,14}$"), {"type": "null"}]}}, "recipientUserId", "title", "body", "sendEmail", "sendSms"),
+    "Notification": obj({"id": UUID, "recipientUserId": ID, "senderUserId": ID, "title": string(120), "body": string(1000), "emailStatus": {"type": "string", "enum": ["NotRequested", "Pending", "Sent", "Failed"]}, "smsStatus": {"type": "string", "enum": ["NotRequested", "Pending", "Sent", "Failed"]}, "createdAtUtc": DATE, "readAtUtc": {"oneOf": [DATE, {"type": "null"}]}}, "id", "recipientUserId", "senderUserId", "title", "body", "emailStatus", "smsStatus", "createdAtUtc", "readAtUtc"),
     "Health": obj({"status": {"type": "string", "enum": ["healthy", "unhealthy"]}}, "status"),
 }
 
-for singular, plural in [("Warehouse", "Warehouses"), ("Item", "Items"), ("User", "Users"), ("WarehouseStatus", "WarehouseStatuses"), ("LogSummary", "Logs"), ("SupplierOrder", "SupplierOrders")]:
+for singular, plural in [("Warehouse", "Warehouses"), ("Item", "Items"), ("User", "Users"), ("WarehouseStatus", "WarehouseStatuses"), ("LogSummary", "Logs"), ("SupplierOrder", "SupplierOrders"), ("Notification", "Notifications")]:
     schemas[f"Paged{plural}"] = obj({
         "items": {"type": "array", "items": ref(singular)},
         "page": ID, "pageSize": {"type": "integer", "minimum": 1, "maximum": 10},
@@ -198,6 +200,20 @@ deduct["responses"]["409"]["content"]["application/problem+json"]["examples"] = 
 }
 add("get", "/api/v1/supplier-orders", "listSupplierOrders", roles=ALL, result="PagedSupplierOrders", params=PAGE, errors=(400,))
 add("post", "/api/v1/supplier-orders", "createSupplierOrder", roles=WRITE, body="SupplierOrderCreate", result="SupplierOrder", status=201, errors=(400, 404, 409))
+add("get", "/api/v1/notifications", "listNotifications", roles=ALL,
+    result="PagedNotifications", params=PAGE, errors=(400,))
+add("post", "/api/v1/notifications", "createNotification", roles=ADMIN,
+    body="NotificationCreate", result="Notification", status=201, errors=(400, 404, 503))
+add("post", "/api/v1/notifications/{id}/read", "markNotificationRead", roles=ALL,
+    status=204, params=[parameter("id", "path", True, UUID)], errors=(404,))
+add("get", "/api/v1/notifications/stream", "streamNotifications", roles=ALL)
+paths["/api/v1/notifications/stream"]["get"]["responses"]["200"]["content"] = {
+    "text/event-stream": {"schema": string()}
+}
+paths["/api/v1/notifications/stream"]["get"]["description"] = (
+    "Authenticated server-sent event stream. Each notification event carries only its ID; "
+    "reload the list on receipt. The stream closes at access-token expiry."
+)
 supplier = paths["/api/v1/supplier-orders"]["post"]
 supplier["description"] = (
     "Manually prepare a supplier request and its outbox message in one transaction. "
@@ -216,7 +232,7 @@ supplier["responses"]["201"]["content"]["application/json"]["example"] = {
 add("get", "/api/v1/health", "getHealth", roles=ALL, result="Health", errors=(503,))
 
 contract = {
-    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.2.1-draft"},
+    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.3.0-draft"},
     "servers": [{"url": "http://localhost:5080"}],
     "paths": paths,
     "components": {

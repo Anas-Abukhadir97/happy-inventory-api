@@ -11,6 +11,7 @@ using HappyInventory.Application.Health;
 using HappyInventory.Application.Inventory;
 using HappyInventory.Application.Integrations;
 using HappyInventory.Application.Logs;
+using HappyInventory.Application.Notifications;
 using HappyInventory.Application.Users;
 using HappyInventory.Api;
 using HappyInventory.Infrastructure.Auth;
@@ -19,6 +20,8 @@ using HappyInventory.Infrastructure.Data;
 using HappyInventory.Infrastructure.Inventory;
 using HappyInventory.Infrastructure.Integrations;
 using HappyInventory.Infrastructure.Logs;
+using HappyInventory.Infrastructure.Notifications;
+using HappyInventory.Api.Notifications;
 using HappyInventory.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
@@ -91,6 +94,9 @@ builder.Services.AddSingleton<ISupplierNotificationAdapter, LocalSupplierNotific
 if (builder.Configuration.GetValue("SupplierOutbox:WorkerEnabled", true))
     builder.Services.AddHostedService<SupplierOutboxWorker>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<NotificationEventBroker>();
+builder.Services.AddSingleton<INotificationPush>(provider => provider.GetRequiredService<NotificationEventBroker>());
 builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddSingleton<IEventLogReader>(new EventLogReader(logDirectory));
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
