@@ -17,6 +17,7 @@
   <data name="TooManyAttempts" xml:space="preserve"><value>Too many sign-in attempts. Try again shortly.</value></data>
   <data name="HttpsRequired" xml:space="preserve"><value>A secure HTTPS connection is required.</value></data>
   <data name="ServiceUnavailable" xml:space="preserve"><value>The service is temporarily unavailable.</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>An unexpected error occurred. Please try again later.</value></data>
   <data name="NotFound" xml:space="preserve"><value>The requested record was not found.</value></data>
   <data name="Conflict" xml:space="preserve"><value>This change conflicts with existing data.</value></data>
   <data name="StaleVersion" xml:space="preserve"><value>This record has changed. Reload it and try again.</value></data>
