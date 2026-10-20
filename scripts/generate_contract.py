@@ -100,6 +100,8 @@ def response(status, schema=None, etag=False):
         out["headers"] = {"ETag": {"schema": string()}}
     if status == 201:
         out.setdefault("headers", {})["Location"] = {"schema": string()}
+    if status == 429:
+        out.setdefault("headers", {})["Retry-After"] = {"description": "Seconds until this rate-limit window permits another request.", "schema": {"type": "integer", "minimum": 1}}
     if status >= 400:
         out["content"] = {"application/problem+json": {"schema": ref("Problem")}}
     return out
@@ -109,7 +111,7 @@ paths = {}
 
 
 def add(method, path, operation_id, *, roles=None, body=None, result=None, status=200, errors=(), params=(), etag=False, cookie=False, csrf=False):
-    responses = {str(status): response(status, result, etag)}
+    responses = {str(status): response(status, result, etag), "429": response(429)}
     for code in (401, 403) if roles else ():
         responses[str(code)] = response(code)
     for code in errors:
@@ -232,7 +234,7 @@ supplier["responses"]["201"]["content"]["application/json"]["example"] = {
 add("get", "/api/v1/health", "getHealth", roles=ALL, result="Health", errors=(503,))
 
 contract = {
-    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.3.0-draft"},
+    "openapi": "3.1.0", "info": {"title": "Happy Inventory API", "version": "0.4.0-draft"},
     "servers": [{"url": "http://localhost:5080"}],
     "paths": paths,
     "components": {

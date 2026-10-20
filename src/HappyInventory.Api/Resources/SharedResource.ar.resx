@@ -15,6 +15,7 @@
   <data name="AuthenticationRequired" xml:space="preserve"><value>سجّل الدخول للمتابعة.</value></data>
   <data name="AccessForbidden" xml:space="preserve"><value>ليست لديك صلاحية الوصول إلى هذا المورد.</value></data>
   <data name="TooManyAttempts" xml:space="preserve"><value>محاولات تسجيل دخول كثيرة جدًا. حاول مرة أخرى قريبًا.</value></data>
+  <data name="RateLimitExceeded" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول مرة أخرى قريبًا.</value></data>
   <data name="HttpsRequired" xml:space="preserve"><value>يلزم اتصال HTTPS آمن.</value></data>
   <data name="NotFound" xml:space="preserve"><value>لم يتم العثور على السجل المطلوب.</value></data>
   <data name="Conflict" xml:space="preserve"><value>يتعارض هذا التغيير مع البيانات الحالية.</value></data>

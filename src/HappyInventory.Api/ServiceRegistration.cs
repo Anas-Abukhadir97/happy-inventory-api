@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Threading.RateLimiting;
 using HappyInventory.Application.Auth;
 using HappyInventory.Application.Health;
 using HappyInventory.Application.Inventory;
@@ -105,20 +103,7 @@ internal static class ServiceRegistration
         builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
         builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddProblemDetails();
-        builder.Services.AddRateLimiter(options =>
-        {
-            options.AddPolicy("login", context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 10,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
-                    AutoReplenishment = true
-                }));
-            options.OnRejected = (context, _) => new ValueTask(ApiProblemResponses.WriteAsync(
-                context.HttpContext, 429, "rate_limited", "TooManyAttempts"));
-        });
+        builder.AddApiRateLimiting();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.Configure<SwaggerGenOptions>(options => options.OperationFilter<AnonymousSecurityOperationFilter>());

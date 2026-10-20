@@ -5,7 +5,7 @@ from pathlib import Path
 
 document = json.loads((Path(__file__).resolve().parents[1] / "docs/contracts/openapi.v1.json").read_text(encoding="utf-8"))
 assert document["openapi"] == "3.1.0"
-assert document["info"]["version"] == "0.3.0-draft"
+assert document["info"]["version"] == "0.4.0-draft"
 schemas = document["components"]["schemas"]
 schemes = document["components"]["securitySchemes"]
 operation_ids = set()
@@ -27,6 +27,8 @@ inspect(document)
 for path, methods in document["paths"].items():
     assert path.startswith("/api/v1/"), path
     for method, operation in methods.items():
+        assert "429" in operation["responses"], (method, path)
+        assert "Retry-After" in operation["responses"]["429"]["headers"], (method, path)
         operation_id = operation["operationId"]
         assert operation_id not in operation_ids, operation_id
         operation_ids.add(operation_id)

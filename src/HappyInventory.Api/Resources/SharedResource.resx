@@ -15,6 +15,7 @@
   <data name="AuthenticationRequired" xml:space="preserve"><value>Sign in to continue.</value></data>
   <data name="AccessForbidden" xml:space="preserve"><value>You do not have access to this resource.</value></data>
   <data name="TooManyAttempts" xml:space="preserve"><value>Too many sign-in attempts. Try again shortly.</value></data>
+  <data name="RateLimitExceeded" xml:space="preserve"><value>Too many requests. Try again shortly.</value></data>
   <data name="HttpsRequired" xml:space="preserve"><value>A secure HTTPS connection is required.</value></data>
   <data name="ServiceUnavailable" xml:space="preserve"><value>The service is temporarily unavailable.</value></data>
   <data name="UnexpectedError" xml:space="preserve"><value>An unexpected error occurred. Please try again later.</value></data>
