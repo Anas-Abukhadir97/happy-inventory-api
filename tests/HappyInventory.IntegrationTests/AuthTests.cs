@@ -278,6 +278,58 @@ public sealed class AuthTests
     }
 
     [Fact]
+    public async Task ApiReadLimitReturnsLocalizedProblemAndRetryAfterWithoutLimitingHealthProbe()
+    {
+        using var factory = new SqliteAppFactory(new Dictionary<string, string?>
+        {
+            ["RateLimits:ReadPerMinute"] = "2"
+        });
+        using var client = Client(factory);
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var allowed = await client.GetAsync("/api/v1/auth/csrf");
+            Assert.Equal(HttpStatusCode.NoContent, allowed.StatusCode);
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/csrf");
+        request.Headers.AcceptLanguage.ParseAdd("ar");
+        using var limited = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+        Assert.Equal("application/problem+json", limited.Content.Headers.ContentType?.MediaType);
+        Assert.True(limited.Headers.TryGetValues("Retry-After", out var retryValues));
+        Assert.True(int.Parse(retryValues.Single()) > 0);
+        using var problem = JsonDocument.Parse(await limited.Content.ReadAsStringAsync());
+        Assert.Equal("rate_limited", problem.RootElement.GetProperty("code").GetString());
+        Assert.Equal("طلبات كثيرة جدًا. حاول مرة أخرى قريبًا.",
+            problem.RootElement.GetProperty("title").GetString());
+
+        using var probe = await client.GetAsync("/health/live");
+        Assert.NotEqual(HttpStatusCode.TooManyRequests, probe.StatusCode);
+    }
+
+    [Fact]
+    public async Task ApiWriteLimitAppliesSeparatelyFromReadAndLoginLimits()
+    {
+        using var factory = new SqliteAppFactory(new Dictionary<string, string?>
+        {
+            ["RateLimits:ReadPerMinute"] = "1",
+            ["RateLimits:WritePerMinute"] = "2"
+        });
+        using var client = Client(factory);
+        using var read = await client.GetAsync("/api/v1/auth/csrf");
+        Assert.Equal(HttpStatusCode.NoContent, read.StatusCode);
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var write = await client.PostAsJsonAsync("/api/v1/auth/login",
+                new { email = "unknown@example.com", password = "wrong", sessionMode = "external" });
+            Assert.Equal(HttpStatusCode.Unauthorized, write.StatusCode);
+        }
+        using var limited = await client.PostAsJsonAsync("/api/v1/auth/login",
+            new { email = "unknown@example.com", password = "wrong", sessionMode = "external" });
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+    }
+
+    [Fact]
     public async Task ExpiredSignedJwtIsRejected()
     {
         using var factory = new SqliteAppFactory();
