@@ -22,7 +22,7 @@ The sibling frontend proxy targets port 5080 from an HTTPS page at `https://loca
 
 ## API rate limits
 
-`/api/v1` allows 120 GET/HEAD requests and 30 other requests per minute per client IP by default. Login has an additional 10-attempts-per-minute limit per IP and account lockout. Rejection returns HTTP 429 with a localized problem response, stable `rate_limited` code and `Retry-After` seconds. Set `RateLimits__ReadPerMinute` and `RateLimits__WritePerMinute` (1–10,000) to tune the two API budgets. These counters are in memory and independent on each process; a multi-instance deployment needs a shared or edge limiter. Reverse-proxy client IP handling must use only a configured trusted proxy. Health probes, Swagger and static files are outside the API budgets.
+`/api/v1` allows 120 GET/HEAD requests and 120 other requests per minute per client IP by default. Login has an additional 10-attempts-per-minute limit per IP and account lockout. Rejection returns HTTP 429 with a localized problem response, stable `rate_limited` code and `Retry-After` seconds. Set `RateLimits__ReadPerMinute` and `RateLimits__WritePerMinute` (1–10,000) to tune the two API budgets. These counters are in memory and independent on each process; a multi-instance deployment needs a shared or edge limiter. Reverse-proxy client IP handling must use only a configured trusted proxy. Health probes, Swagger and static files are outside the API budgets.
 
 ## Roles and notifications
 
