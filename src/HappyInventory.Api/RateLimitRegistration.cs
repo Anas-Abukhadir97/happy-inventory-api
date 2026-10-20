@@ -12,7 +12,7 @@ internal static class RateLimitRegistration
         builder.Services.AddOptions<RateLimiterOptions>().Configure<IConfiguration>((options, configuration) =>
         {
             var readLimit = Limit(configuration, "RateLimits:ReadPerMinute", 120);
-            var writeLimit = Limit(configuration, "RateLimits:WritePerMinute", 30);
+            var writeLimit = Limit(configuration, "RateLimits:WritePerMinute", 120);
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 if (!context.Request.Path.StartsWithSegments("/api/v1"))
